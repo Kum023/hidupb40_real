@@ -9,6 +9,7 @@
  */
 
 import type * as ai from "../ai.js";
+import type * as classroom from "../classroom.js";
 import type * as games from "../games.js";
 import type * as leaderboard from "../leaderboard.js";
 import type * as tidbSync from "../tidbSync.js";
@@ -21,6 +22,7 @@ import type {
 
 declare const fullApi: ApiFromModules<{
   ai: typeof ai;
+  classroom: typeof classroom;
   games: typeof games;
   leaderboard: typeof leaderboard;
   tidbSync: typeof tidbSync;

@@ -14,10 +14,11 @@ import { TutorialDialog } from "@/components/game/TutorialDialog";
 import { LeaveDialog } from "@/components/game/LeaveDialog";
 import { GroceryDialog } from "@/components/game/GroceryDialog";
 import { RestaurantDialog, MenuItem, RESTAURANT_MENUS } from "@/components/game/RestaurantDialog";
+import { InfoSidebar } from "@/components/game/InfoSidebar";
 import { Button } from "@/components/ui/button";
 import { useAudio } from "@/components/providers/AudioProvider";
 import { Id } from "@/convex/_generated/dataModel";
-import { LocationId, PERSONA_MAPS, KL_MAP, SPECIAL_EVENTS, WEEKEND_ACTIVITIES, PERSONAS } from "@/lib/constants";
+import { LocationId, PERSONA_MAPS, KL_MAP, SPECIAL_EVENTS, WEEKEND_ACTIVITIES, PERSONAS, WEEKLY_FINANCES } from "@/lib/constants";
 import { Scenario, SpecialEvent, WeekendActivity } from "@/lib/types";
 import { motion } from "framer-motion";
 import { Loader2, RotateCcw, Calendar, CreditCard } from "lucide-react";
@@ -177,10 +178,27 @@ export default function GamePage() {
     const events = SPECIAL_EVENTS[persona];
     if (!events) return null;
 
-    // Combine all events and pick randomly
-    const allEvents = [...events.negative, ...events.positive, ...(events.neutral || [])];
-    const randomIndex = Math.floor(Math.random() * allEvents.length);
-    return allEvents[randomIndex] as SpecialEvent;
+    // Progressive difficulty: event pool shifts by week.
+    // Week 1 = positive only (grace period, gentle learning curve).
+    // Week 2 = positive + neutral (reality starts).
+    // Week 3-4 = negative events 2× weighted (real life pressure).
+    let pool: SpecialEvent[];
+    if (game.currentWeek === 1) {
+      pool = [...events.positive] as SpecialEvent[];
+    } else if (game.currentWeek === 2) {
+      pool = [...events.positive, ...(events.neutral ?? [])] as SpecialEvent[];
+    } else {
+      // Weeks 3-4: negative events appear twice as often
+      pool = [
+        ...events.negative,
+        ...events.negative,
+        ...events.positive,
+        ...(events.neutral ?? []),
+      ] as SpecialEvent[];
+    }
+
+    if (pool.length === 0) pool = [...events.negative, ...events.positive] as SpecialEvent[];
+    return pool[Math.floor(Math.random() * pool.length)];
   }, [game]);
 
   // Check for random event trigger after action
@@ -740,17 +758,18 @@ export default function GamePage() {
               </div>
             )}
 
-            {/* Pay Debt Button - shows at bank on week 4 */}
+            {/* Pay Debt (Bank Extra Payment) — available any week at the bank */}
             {game.currentLocation === "bank" &&
-             game.currentWeek === 4 &&
-             !weeklyObjectives.paidDebt && (
+             !weeklyObjectives.paidDebt &&
+             game.debt > 0 && (
               <Button
                 onClick={handlePayDebt}
                 className="bg-purple-600 hover:bg-purple-700"
                 disabled={isGenerating || isProcessing}
+                title="Pay RM 200 extra above your minimum instalment to boost your credit score by +20"
               >
                 <CreditCard className="w-4 h-4 mr-2" />
-                Pay Debt (RM{Math.max(200, Math.ceil(game.debt * 0.05))})
+                Extra Payment (−RM200, +20 Credit)
               </Button>
             )}
 
@@ -827,6 +846,18 @@ export default function GamePage() {
           skipActivity={WEEKEND_ACTIVITIES.skip}
           currentMoney={game.money}
           currentWeek={game.currentWeek}
+          paydaySummary={(() => {
+            const fin = WEEKLY_FINANCES[game.personaId as keyof typeof WEEKLY_FINANCES];
+            if (!fin) return undefined;
+            return {
+              weeklySalary: fin.weeklySalary,
+              weeklyRent: fin.weeklyRent,
+              weeklyDebtMin: fin.weeklyDebtMin,
+              debtLabel: fin.debtLabel,
+              hasDebt: game.debt > 0,
+              currentDebt: Math.max(0, game.debt - fin.weeklyDebtMin), // projected after auto-debit
+            };
+          })()}
           onSelectActivity={handleWeekendActivity}
         />
 
@@ -879,7 +910,20 @@ export default function GamePage() {
           personaId={game.personaId}
           restaurantName={currentRestaurantName}
         />
+
+        {/* Info Sidebar — floating "Game Guide" button + slide-in panel */}
+        <InfoSidebar
+          personaId={game.personaId}
+          currentWeek={game.currentWeek}
+          money={game.money}
+          debt={game.debt}
+          creditScore={game.creditScore}
+          health={game.health}
+          stress={game.stress}
+          weeklyObjectivesPaidDebt={weeklyObjectives.paidDebt}
+        />
       </div>
     </main>
+
   );
 }

@@ -6,7 +6,33 @@ const DEFAULT_WEEKLY_OBJECTIVES = {
   workDaysCompleted: 0,
   boughtGroceries: false,
   filledPetrol: false,
-  paidDebt: false,
+  paidDebt: false, // tracks optional EXTRA bank payment this week
+};
+
+// Weekly financial breakdown per persona.
+// Salary is paid at end of each week (like monthly salary ÷ 4).
+// Rent and minimum debt installment are auto-deducted at the same time (bank auto-debit).
+const WEEKLY_FINANCES: Record<string, {
+  weeklySalary: number;
+  weeklyRent: number;
+  weeklyDebtMin: number; // minimum installment auto-deducted
+  debtInterestRate: number; // weekly interest on remaining debt
+  debtLabel: string;
+}> = {
+  freshGrad: {
+    weeklySalary: 550,       // RM 2,200 monthly ÷ 4 weeks
+    weeklyRent: 138,          // RM 550/month KL apartment ÷ 4 weeks
+    weeklyDebtMin: 150,       // PTPTN RM 600/month ÷ 4 weeks
+    debtInterestRate: 0.0003, // ~1.5% annual student loan
+    debtLabel: "PTPTN",
+  },
+  singleParent: {
+    weeklySalary: 450,        // RM 1,800 monthly ÷ 4 weeks
+    weeklyRent: 113,          // RM 450/month Penang house ÷ 4 weeks
+    weeklyDebtMin: 88,        // Personal loan RM 350/month ÷ 4 weeks
+    debtInterestRate: 0.0006, // Higher rate on personal loan
+    debtLabel: "Personal Loan",
+  },
 };
 
 // Helper to get energy with fallback
@@ -48,35 +74,37 @@ function getRandomEventDay(): number {
 // Create a new game with selected persona
 export const createGame = mutation({
   args: {
-    playerName: v.string(),
-    personaId: v.string(),
-    initialMoney: v.number(),
-    initialDebt: v.number(),
+    playerName:         v.string(),
+    personaId:          v.string(),
+    initialMoney:       v.number(),
+    initialDebt:        v.number(),
     initialCreditScore: v.number(),
+    classroomCode:      v.optional(v.string()), // links game to teacher's classroom session
   },
   handler: async (ctx, args) => {
     const gameId = await ctx.db.insert("games", {
-      playerName: args.playerName,
-      personaId: args.personaId,
-      money: args.initialMoney,
-      debt: args.initialDebt,
-      creditScore: args.initialCreditScore,
-      health: 100,
-      stress: 20,
-      currentDay: 1,
-      currentWeek: 1,
-      energyRemaining: 11, // 11 energy per week
-      currentLocation: "home",
+      playerName:       args.playerName,
+      personaId:        args.personaId,
+      money:            args.initialMoney,
+      debt:             args.initialDebt,
+      creditScore:      args.initialCreditScore,
+      health:           100,
+      stress:           20,
+      currentDay:       1,
+      currentWeek:      1,
+      energyRemaining:  11,
+      currentLocation:  "home",
+      classroomCode:    args.classroomCode?.trim().toUpperCase(),
       weeklyObjectives: {
         workDaysCompleted: 0,
-        boughtGroceries: false,
-        filledPetrol: false,
-        paidDebt: false,
+        boughtGroceries:   false,
+        filledPetrol:      false,
+        paidDebt:          false,
       },
       weeklyEventTriggered: false,
-      weeklyEventDay: getRandomEventDay(),
-      workedToday: false, // Track daily work
-      isGameOver: false,
+      weeklyEventDay:       getRandomEventDay(),
+      workedToday:          false,
+      isGameOver:           false,
     });
 
     return gameId;
@@ -156,23 +184,31 @@ export const moveToLocation = mutation({
     const newEnergy = energy - 1;
     const objectives = getObjectives(game);
 
-    // Check if it's impossible to complete objectives with remaining energy
+    // Check if it's impossible to complete objectives with remaining energy.
+    // Debt payment is now auto-deducted at week end — not a manual energy cost.
     const workDaysNeeded = Math.max(0, 5 - objectives.workDaysCompleted);
     const groceriesNeeded = objectives.boughtGroceries ? 0 : 1;
     const petrolNeeded = objectives.filledPetrol ? 0 : 1;
-    const debtNeeded = (game.currentWeek === 4 && !objectives.paidDebt) ? 1 : 0;
+    const minEnergyNeeded = workDaysNeeded + groceriesNeeded + petrolNeeded;
 
-    // Minimum energy needed (work days + other objectives that aren't at same location)
-    const minEnergyNeeded = workDaysNeeded + groceriesNeeded + petrolNeeded + debtNeeded;
+    // FIX: if the destination itself completes a pending objective, don't count
+    // that energy as "needed" — arriving there IS the completion.
+    const destinationCompletesObjective =
+      (args.location === "office" && workDaysNeeded > 0 && !game.workedToday) ||
+      (args.location === "shop"   && groceriesNeeded > 0) ||
+      (args.location === "petrol" && petrolNeeded > 0);
+    const adjustedMinEnergy = destinationCompletesObjective
+      ? Math.max(0, minEnergyNeeded - 1)
+      : minEnergyNeeded;
 
     let isGameOver = false;
     let endingType: string | undefined;
     let failureReason: string | undefined;
 
-    if (newEnergy < minEnergyNeeded) {
+    if (newEnergy < adjustedMinEnergy) {
       isGameOver = true;
       endingType = "impossible_objectives";
-      failureReason = `Not enough energy to complete objectives. Need ${minEnergyNeeded} energy but only have ${newEnergy}. Work: ${workDaysNeeded} days needed, Groceries: ${groceriesNeeded ? "pending" : "done"}, Petrol: ${petrolNeeded ? "pending" : "done"}${debtNeeded ? ", Debt: pending" : ""}.`;
+      failureReason = `Not enough energy left to finish the week. Need ${adjustedMinEnergy} more actions but only ${newEnergy} energy remains. Work: ${workDaysNeeded} days, Groceries: ${groceriesNeeded ? "pending" : "done"}, Petrol: ${petrolNeeded ? "pending" : "done"}.`;
     }
 
     await ctx.db.patch(args.gameId, {
@@ -218,7 +254,7 @@ export const completeObjective = mutation({
           ...objectives,
           workDaysCompleted: objectives.workDaysCompleted + 1,
         };
-        stressChange = 10; // Work increases stress by 10%
+        stressChange = 7; // Work increases stress by 7% (realistic: draining but manageable)
         break;
 
       case "groceries_healthy":
@@ -258,25 +294,26 @@ export const completeObjective = mutation({
         moneyChange = -80; // RM80 for petrol
         break;
 
-      case "debt":
+      case "debt": {
+        // This is an EXTRA voluntary payment at the bank (on top of auto-debit at week end).
+        // Rewards the player with a credit score boost — teaches proactive debt management.
         if (objectives.paidDebt) {
-          throw new Error("Already paid debt this week");
+          throw new Error("Already made an extra payment this week — come back next week");
         }
-        // Calculate debt payment - realistic monthly installment
-        // Degree/loans typically paid over 5-10 years, so ~5% of total debt per month
-        // Fresh Grad: RM30k → RM500, Single Parent: RM7k → RM350
-        const debtPayment = Math.max(200, Math.ceil(game.debt * 0.05));
-        if (game.money < debtPayment) {
-          throw new Error("Not enough money to pay debt");
+        if (game.debt <= 0) {
+          throw new Error("You have no remaining debt. Great job!");
         }
-        updates.weeklyObjectives = {
-          ...objectives,
-          paidDebt: true,
-        };
-        moneyChange = -debtPayment;
-        // Update debt amount
-        updates.debt = Math.max(0, game.debt - debtPayment);
+        const extraPayment = 200; // Fixed RM 200 extra above the weekly minimum installment
+        if (game.money < extraPayment) {
+          throw new Error(`Need at least RM ${extraPayment} to make an extra debt payment`);
+        }
+        updates.weeklyObjectives = { ...objectives, paidDebt: true };
+        updates.debt = Math.max(0, game.debt - extraPayment);
+        // Reward: paying extra above minimum significantly boosts credit score
+        updates.creditScore = Math.min(850, game.creditScore + 20);
+        moneyChange = -extraPayment;
         break;
+      }
 
       default:
         throw new Error("Invalid objective type");
@@ -312,10 +349,24 @@ export const completeObjective = mutation({
       failureReason,
     });
 
+    // Log credit event for voluntary extra debt payment
+    let objectiveCreditChange = 0;
+    if (args.objectiveType === "debt" && !isGameOver) {
+      objectiveCreditChange = 20;
+      await ctx.db.insert("creditEvents", {
+        gameId: args.gameId,
+        change: 20,
+        reason: "Voluntary extra debt payment — responsible financial behaviour",
+        day: game.currentDay,
+        week: game.currentWeek,
+      });
+    }
+
     return {
       moneyChange,
       stressChange,
       healthChange,
+      creditChange: objectiveCreditChange,
       isGameOver,
       endingType,
     };
@@ -392,10 +443,8 @@ export const checkWeekComplete = query({
     if (!objectives.filledPetrol) {
       missing.push("Fill Petrol");
     }
-    // Debt payment only required on week 4
-    if (game.currentWeek === 4 && !objectives.paidDebt) {
-      missing.push("Pay Debt");
-    }
+    // Note: Debt payment is now auto-deducted at week end (like bank auto-debit).
+    // The bank visit for extra payment is optional and rewards credit score, not mandatory.
 
     const complete = missing.length === 0;
 
@@ -503,40 +552,78 @@ export const selectWeekendActivity = mutation({
     const game = await ctx.db.get(args.gameId);
     if (!game) throw new Error("Game not found");
 
-    // Check if objectives are complete
+    // ── Objectives check (work, groceries, petrol — debt is auto-deducted) ──
     const objectives = getObjectives(game);
     const workComplete = objectives.workDaysCompleted >= 5;
     const groceriesComplete = objectives.boughtGroceries;
     const petrolComplete = objectives.filledPetrol;
-    const debtComplete = game.currentWeek === 4 ? objectives.paidDebt : true;
 
-    if (!workComplete || !groceriesComplete || !petrolComplete || !debtComplete) {
-      // Game over - objectives not complete
+    if (!workComplete || !groceriesComplete || !petrolComplete) {
       const missing: string[] = [];
-      if (!workComplete) missing.push("Work");
+      if (!workComplete) missing.push(`Work (${objectives.workDaysCompleted}/5 days)`);
       if (!groceriesComplete) missing.push("Groceries");
       if (!petrolComplete) missing.push("Petrol");
-      if (!debtComplete) missing.push("Debt Payment");
 
       await ctx.db.patch(args.gameId, {
         isGameOver: true,
         endingType: "objectives_failed",
-        failureReason: `Failed to complete weekly objectives: ${missing.join(", ")}. You couldn't keep up with life's demands.`,
+        failureReason: `You didn't complete: ${missing.join(", ")}. Life doesn't pause when you don't keep up.`,
       });
 
       return {
         isGameOver: true,
         endingType: "objectives_failed",
-        failureReason: `Failed to complete weekly objectives: ${missing.join(", ")}`,
+        failureReason: `Missed objectives: ${missing.join(", ")}`,
+        salaryBreakdown: null,
       };
     }
 
-    // Apply weekend activity effects
-    const newMoney = Math.max(0, game.money - args.moneyCost);
+    // ── Weekend activity cost ──
+    const moneyAfterActivity = game.money - args.moneyCost;
+
+    // ── PAYDAY: weekly salary credited (like monthly salary ÷ 4) ──
+    const finances = WEEKLY_FINANCES[game.personaId] ?? WEEKLY_FINANCES.freshGrad;
+    const moneyAfterSalary = moneyAfterActivity + finances.weeklySalary;
+
+    // ── AUTO-DEBIT: rent deducted (landlord auto-collects) ──
+    const moneyAfterRent = moneyAfterSalary - finances.weeklyRent;
+
+    // ── AUTO-DEBIT: minimum debt instalment (progressive difficulty) ──
+    // Week 1 = 33% (PTPTN grace period), Week 2 = 67% (transition),
+    // Week 3-4 = 100% (full repayment — welcome to adult life).
+    // This mirrors how PTPTN and personal loans actually ramp up after graduation.
+    const weekScales: Record<number, number> = { 1: 0.33, 2: 0.67, 3: 1.0, 4: 1.0 };
+    const difficultyScale = weekScales[game.currentWeek] ?? 1.0;
+    const scaledDebtMin = Math.round(finances.weeklyDebtMin * difficultyScale);
+
+    const hasDebt = game.debt > 0;
+    const minimumInstalment = Math.min(scaledDebtMin, game.debt);
+    const canPayInstalment = hasDebt && moneyAfterRent >= minimumInstalment;
+    const actualInstalmentPaid = canPayInstalment ? minimumInstalment : 0;
+    const moneyAfterDebt = moneyAfterRent - actualInstalmentPaid;
+
+    // ── INTEREST: remaining debt accrues interest (compound effect) ──
+    const debtAfterInstalment = Math.max(0, game.debt - actualInstalmentPaid);
+    const weeklyInterest = Math.round(debtAfterInstalment * finances.debtInterestRate);
+    const finalDebt = debtAfterInstalment + weeklyInterest;
+
+    // ── Stress and health from weekend activity ──
     const newStress = Math.min(100, Math.max(0, game.stress + args.stressChange));
     const newHealth = Math.min(100, Math.max(0, game.health + (args.healthChange || 0)));
 
-    // Check for game over from weekend activity
+    // ── Final money (floor at 0) ──
+    const newMoney = Math.max(0, moneyAfterDebt);
+
+    // ── Credit score from auto-debit result ──
+    let creditChange = 0;
+    if (hasDebt && canPayInstalment) {
+      creditChange = 5; // On-time auto-payment: small but steady credit improvement
+    } else if (hasDebt && !canPayInstalment) {
+      creditChange = -20; // Missed instalment: real credit damage
+    }
+    const newCreditScore = Math.min(850, Math.max(300, game.creditScore + creditChange));
+
+    // ── Game-over checks ──
     let isGameOver = false;
     let endingType: string | undefined;
     let failureReason: string | undefined;
@@ -544,29 +631,59 @@ export const selectWeekendActivity = mutation({
     if (newHealth <= 0) {
       isGameOver = true;
       endingType = "health_crisis";
-      failureReason = "Your health has failed.";
+      failureReason = "Your health completely failed. You had to stop working.";
     } else if (newStress >= 100) {
       isGameOver = true;
       endingType = "burnout";
-      failureReason = "You've completely burned out.";
+      failureReason = "You burned out completely. Your body and mind gave up.";
+    } else if (moneyAfterRent < 0 && game.currentWeek < 4) {
+      // Can't cover rent even after salary — eviction
+      isGameOver = true;
+      endingType = "evicted";
+      failureReason = "After salary, you still couldn't cover rent. You received an eviction notice.";
     }
 
-    // Check if this was the final week
+    // ── Final week: determine ending ──
     if (game.currentWeek >= 4 && !isGameOver) {
       isGameOver = true;
-      endingType = newMoney > 0 && game.creditScore > 600 ? "success" : "struggle";
+      const debtImproving = finalDebt <= game.debt; // debt shrinking or stable
+      const hasSavedUp = newMoney >= 400;            // some cushion left
+      const goodCredit = newCreditScore >= 650;      // reasonable credit standing
+
+      if (hasSavedUp && goodCredit && debtImproving) {
+        endingType = "success";          // on track financially
+      } else if (!hasSavedUp && !goodCredit) {
+        endingType = "struggle";         // treading water
+      } else {
+        endingType = "survivor";         // made it, but barely
+      }
     }
 
-    // Advance to next week
+    // ── Log credit event from auto-debit ──
+    if (creditChange !== 0) {
+      await ctx.db.insert("creditEvents", {
+        gameId: args.gameId,
+        change: creditChange,
+        reason: canPayInstalment
+          ? `${finances.debtLabel} auto-instalment paid on time`
+          : `${finances.debtLabel} instalment missed — insufficient funds`,
+        day: 7,
+        week: game.currentWeek,
+      });
+    }
+
+    // ── Advance to next week ──
     const newWeek = game.currentWeek + 1;
 
     await ctx.db.patch(args.gameId, {
       money: newMoney,
+      debt: finalDebt,
+      creditScore: newCreditScore,
       stress: newStress,
       health: newHealth,
       currentDay: 1,
       currentWeek: newWeek,
-      energyRemaining: 11, // Reset energy for new week
+      energyRemaining: 11,
       weeklyObjectives: {
         workDaysCompleted: 0,
         boughtGroceries: false,
@@ -575,7 +692,7 @@ export const selectWeekendActivity = mutation({
       },
       weeklyEventTriggered: false,
       weeklyEventDay: getRandomEventDay(),
-      workedToday: false, // Reset for new week
+      workedToday: false,
       isGameOver,
       endingType,
       failureReason,
@@ -584,10 +701,30 @@ export const selectWeekendActivity = mutation({
     return {
       newWeek,
       newMoney,
+      newDebt: finalDebt,
       newStress,
       newHealth,
+      newCreditScore,
       isGameOver,
       endingType,
+      // Full breakdown returned so frontend can show the payday summary + warnings
+      salaryBreakdown: {
+        grossSalary: finances.weeklySalary,
+        rentDeducted: finances.weeklyRent,
+        instalmentPaid: actualInstalmentPaid,
+        instalmentExpected: scaledDebtMin,
+        interestAdded: weeklyInterest,
+        weekendCost: args.moneyCost,
+        creditChange,
+        couldPayInstalment: canPayInstalment,
+        debtLabel: finances.debtLabel,
+        difficultyScale,
+        // Next week's instalment so the frontend can warn the player
+        nextWeekInstalmentMin: game.currentWeek < 4
+          ? Math.round(finances.weeklyDebtMin * (weekScales[game.currentWeek + 1] ?? 1.0))
+          : scaledDebtMin,
+        nextWeekIsFullDebt: (game.currentWeek + 1) >= 3,
+      },
     };
   },
 });
@@ -607,7 +744,8 @@ export const checkGameOverCondition = mutation({
       const workComplete = objectives.workDaysCompleted >= 5;
       const groceriesComplete = objectives.boughtGroceries;
       const petrolComplete = objectives.filledPetrol;
-      const debtComplete = game.currentWeek === 4 ? objectives.paidDebt : true;
+      // Debt is auto-deducted at week end — not part of energy-based objectives.
+      const debtComplete = true;
 
       if (!workComplete || !groceriesComplete || !petrolComplete || !debtComplete) {
         const missing: string[] = [];

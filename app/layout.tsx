@@ -4,7 +4,7 @@ import "./globals.css";
 import { ConvexProvider } from "@/components/providers/ConvexProvider";
 import { AudioProvider } from "@/components/providers/AudioProvider";
 import { Header } from "@/components/Header";
-import { GlobalSettings } from "@/components/game/GlobalSettings";
+import { LanguageProvider } from "@/lib/LanguageContext";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -37,15 +37,16 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} ${pressStart2P.variable} antialiased`}
       >
-        <ConvexProvider>
-          <AudioProvider>
-            <Header />
-            <div className="pt-12">
-              {children}
-            </div>
-            <GlobalSettings />
-          </AudioProvider>
-        </ConvexProvider>
+        <LanguageProvider>
+          <ConvexProvider>
+            <AudioProvider>
+              <Header />
+              <div className="pt-12">
+                {children}
+              </div>
+            </AudioProvider>
+          </ConvexProvider>
+        </LanguageProvider>
       </body>
     </html>
   );

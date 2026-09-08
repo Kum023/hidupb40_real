@@ -52,18 +52,21 @@ export function ObjectivesPanel({ objectives, currentWeek, currentDay, energy, w
       required: true,
     },
     {
+      // Bank: optional extra payment — always visible as a bonus objective
       id: "debt",
-      label: "Pay Debt",
+      label: "Bank: Extra Payment (+20 Credit)",
       complete: objectives.paidDebt,
       icon: CreditCard,
-      required: debtRequired,
-      hidden: !debtRequired,
+      required: false, // never mandatory — auto-debit handles minimum
+      hidden: false,   // always show so students know it's an option
     },
   ].filter((obj) => !obj.hidden);
 
-  const completedCount = objectivesList.filter((o) => o.complete).length;
-  const totalRequired = objectivesList.length;
-  const allComplete = completedCount === totalRequired;
+  const requiredObjectives = objectivesList.filter((o) => o.required);
+  const optionalObjectives = objectivesList.filter((o) => !o.required);
+  const completedRequired = requiredObjectives.filter((o) => o.complete).length;
+  const totalRequired = requiredObjectives.length;
+  const allComplete = completedRequired === totalRequired;
   const lowEnergy = energy <= 3;
 
   return (
@@ -75,12 +78,13 @@ export function ObjectivesPanel({ objectives, currentWeek, currentDay, energy, w
         <span className={`text-xs font-mono font-bold ${
           allComplete ? "text-emerald-400" : "text-cyan-400"
         }`}>
-          {completedCount}/{totalRequired}
+          {completedRequired}/{totalRequired}
         </span>
       </div>
 
       <div className="space-y-2">
-        {objectivesList.map((objective) => {
+        {/* Required objectives */}
+        {requiredObjectives.map((objective) => {
           const Icon = objective.icon;
           const isTodayPending = 'todayPending' in objective && objective.todayPending;
           return (
@@ -118,6 +122,38 @@ export function ObjectivesPanel({ objectives, currentWeek, currentDay, energy, w
                   {objective.progress}
                 </span>
               )}
+            </motion.div>
+          );
+        })}
+
+        {/* Optional objectives (bank extra payment) */}
+        {optionalObjectives.map((objective) => {
+          const Icon = objective.icon;
+          return (
+            <motion.div
+              key={objective.id}
+              initial={{ opacity: 0, x: -10 }}
+              animate={{ opacity: 1, x: 0 }}
+              className={`flex items-center gap-2 p-2 rounded-md border border-dashed ${
+                objective.complete
+                  ? "bg-purple-900/30 border-purple-500/40"
+                  : "bg-slate-800/30 border-slate-600/40"
+              }`}
+            >
+              {objective.complete ? (
+                <CheckCircle2 className="w-4 h-4 text-purple-400" />
+              ) : (
+                <Circle className="w-4 h-4 text-slate-600" />
+              )}
+              <Icon className={`w-4 h-4 ${objective.complete ? "text-purple-400" : "text-slate-500"}`} />
+              <span className={`text-xs flex-1 ${
+                objective.complete ? "text-purple-300" : "text-slate-500"
+              }`}>
+                {objective.label}
+              </span>
+              <span className="text-xs bg-purple-900/50 text-purple-400 px-1.5 py-0.5 rounded font-mono">
+                BONUS
+              </span>
             </motion.div>
           );
         })}

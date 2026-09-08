@@ -11,33 +11,33 @@ export default defineSchema({
     creditScore: v.number(),
     health: v.number(),
     stress: v.number(),
-    currentDay: v.number(), // 1-5 weekdays
-    currentWeek: v.number(), // 1-4
+    currentDay: v.number(),
+    currentWeek: v.number(),
     currentLocation: v.string(),
 
-    // New energy system (optional for backwards compatibility with old games)
-    energyRemaining: v.optional(v.number()), // 11 per week
-    actionsRemaining: v.optional(v.number()), // Legacy field
+    // Classroom mode — links student's game to a teacher's session
+    classroomCode: v.optional(v.string()),
 
-    // Weekly objectives tracking (optional for backwards compatibility)
+    // Energy system
+    energyRemaining: v.optional(v.number()),
+    actionsRemaining: v.optional(v.number()),
+
+    // Weekly objectives tracking
     weeklyObjectives: v.optional(v.object({
-      workDaysCompleted: v.number(), // 0-5, need 5 to complete
+      workDaysCompleted: v.number(),
       boughtGroceries: v.boolean(),
       filledPetrol: v.boolean(),
-      paidDebt: v.boolean(), // only required week 4
+      paidDebt: v.boolean(),
     })),
 
-    // Special event tracking (optional for backwards compatibility)
     weeklyEventTriggered: v.optional(v.boolean()),
-    weeklyEventDay: v.optional(v.number()), // random day 1-5 when event triggers
-
-    // Daily work tracking
-    workedToday: v.optional(v.boolean()), // Reset to false on day advance
+    weeklyEventDay: v.optional(v.number()),
+    workedToday: v.optional(v.boolean()),
 
     isGameOver: v.boolean(),
     endingType: v.optional(v.string()),
     failureReason: v.optional(v.string()),
-  }),
+  }).index("by_classroom", ["classroomCode"]),
 
   // Player decision history
   decisions: defineTable({
@@ -96,11 +96,21 @@ export default defineSchema({
     gameId: v.optional(v.id("games")),
     playerName: v.string(),
     personaId: v.string(),
-    score: v.number(), // Final cash money in hand
+    score: v.number(),
     weeksCompleted: v.number(),
     endingType: v.string(),
     createdAt: v.number(),
   })
     .index("by_score", ["score"])
     .index("by_game", ["gameId"]),
+
+  // Teacher classroom sessions — real-time class dashboard
+  classrooms: defineTable({
+    code: v.string(),           // e.g. "MAJU47" — shared with students
+    teacherName: v.string(),
+    subject: v.optional(v.string()),
+    institution: v.optional(v.string()),
+    isActive: v.boolean(),
+    createdAt: v.number(),
+  }).index("by_code", ["code"]),
 });

@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import { Coins, Heart, Brain, TrendingUp, Calendar, Zap } from "lucide-react";
 import { EnergyBar } from "./EnergyBar";
 import { ObjectivesPanel } from "./ObjectivesPanel";
+import { CREDIT_SCORE_BANDS } from "@/lib/constants";
 
 interface WeeklyObjectives {
   workDaysCompleted: number;
@@ -176,6 +177,9 @@ export function StatsBar({
             className={`text-xl font-bold font-mono ${getCreditColor(creditScore)}`}
           >
             {creditScore}
+            <span className="text-xs font-normal ml-1 opacity-70">
+              {CREDIT_SCORE_BANDS.find(b => creditScore >= b.min && creditScore <= b.max)?.label ?? ""}
+            </span>
           </motion.span>
         </div>
         <div className="relative h-3 bg-slate-700 rounded-full overflow-hidden">

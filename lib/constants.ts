@@ -268,28 +268,38 @@ export const PERSONAS = {
   freshGrad: {
     id: "freshGrad",
     name: "Fresh Graduate",
+    name_bm: "Graduan Baru",
     description: "Just finished university, starting life in KL with degree debt",
+    description_bm: "Baru tamat universiti, mulakan hidup di KL dengan hutang ijazah",
     location: "Kuala Lumpur",
     monthlySalary: 2200,
     initialMoney: 800,
     initialDebt: 30000,
     debtType: "Degree loan",
+    debtType_bm: "Pinjaman Ijazah",
     initialCreditScore: 650,
     backstory:
       "You just graduated with a degree in Business Administration. You landed your first job at a startup in KL. Your degree loan payments start this month. Welcome to the big city life.",
+    backstory_bm:
+      "Anda baru sahaja tamat pengajian dengan ijazah Pengurusan Perniagaan. Anda mendapat kerja pertama di sebuah syarikat pemula di KL. Bayaran pinjaman ijazah anda bermula bulan ini. Selamat datang ke kota besar.",
   },
   singleParent: {
     id: "singleParent",
     name: "Single Parent",
+    name_bm: "Ibu/Bapa Tunggal",
     description: "Raising a child alone in Penang, juggling work and family",
+    description_bm: "Membesarkan anak sendirian di Pulau Pinang, mengimbangi kerja dan keluarga",
     location: "Pulau Pinang",
     monthlySalary: 1800,
     initialMoney: 500,
     initialDebt: 7000,
     debtType: "Personal Loan",
+    debtType_bm: "Pinjaman Peribadi",
     initialCreditScore: 580,
     backstory:
       "After your divorce, you moved back to your hometown island of Penang. You work as an admin clerk while raising your 8-year-old child. The sea breeze is calming, but money is always tight.",
+    backstory_bm:
+      "Selepas bercerai, anda berpindah semula ke kampung halaman di Pulau Pinang. Anda bekerja sebagai kerani admin sambil membesarkan anak berumur 8 tahun. Angin laut menenangkan, tetapi kewangan sentiasa sempit.",
   },
 } as const;
 
@@ -298,20 +308,57 @@ export type PersonaId = keyof typeof PERSONAS;
 // Game configuration
 export const GAME_CONFIG = {
   energyPerWeek: 11,
-  totalWeeks: 4, // 1 month
+  totalWeeks: 4, // 1 month = 4 weeks
   daysPerWeek: 5, // weekdays only (Days 1-5)
-  workDaysRequired: 5, // must work all 5 weekdays
-  debtPaymentWeek: 4, // debt payment required on week 4
-  energyCostPerAction: 1, // all actions cost 1 energy
+  workDaysRequired: 5, // must attend work every weekday
+  energyCostPerAction: 1, // every location visit costs 1 energy
   startingHealth: 100,
   startingStress: 20,
   creditScoreMin: 300,
   creditScoreMax: 850,
-  // Objective costs
-  groceryCostHealthy: 50,
-  groceryCostUnhealthy: 30,
+  // Objective costs (deducted immediately when objective is completed)
+  groceryCostHealthy: 50,    // +10 health, -10 stress
+  groceryCostUnhealthy: 30,  // -10 health, -15 stress (cheaper but hurts you)
   petrolCost: 80,
+  // Energy breakdown (for student reference):
+  //   Mandatory per week: 5 work + 1 groceries + 1 petrol = 7
+  //   Free energy for choices: 11 - 7 = 4 actions
+  workStressPerDay: 7,       // reduced from 10; work is tiring but not crushing alone
 } as const;
+
+// Weekly auto-deductions per persona (mirrored from convex/games.ts WEEKLY_FINANCES).
+// Salary paid at week end; rent + minimum debt installment auto-debited at same time.
+// Used by the frontend to show the payday breakdown preview in the Weekend Dialog.
+export const WEEKLY_FINANCES = {
+  freshGrad: {
+    weeklySalary: 550,   // RM 2,200 monthly salary ÷ 4 weeks
+    weeklyRent: 138,      // RM 550/month KL apartment ÷ 4 weeks
+    weeklyDebtMin: 150,   // PTPTN ~RM 600/month ÷ 4 weeks (auto-debit)
+    netAfterAutoDebits: 262, // 550 - 138 - 150 (before groceries & petrol)
+    debtLabel: "PTPTN",
+  },
+  singleParent: {
+    weeklySalary: 450,   // RM 1,800 monthly salary ÷ 4 weeks
+    weeklyRent: 113,      // RM 450/month Penang house ÷ 4 weeks
+    weeklyDebtMin: 88,    // Personal loan ~RM 350/month ÷ 4 weeks
+    netAfterAutoDebits: 249, // 450 - 113 - 88
+    debtLabel: "Personal Loan",
+  },
+} as const;
+
+// Credit score bands — shown to students to explain what the number means in real life.
+export const CREDIT_SCORE_BANDS = [
+  { min: 750, max: 850, label: "Excellent", colour: "#22c55e",
+    meaning: "Easy loan approvals, lowest interest rates" },
+  { min: 700, max: 749, label: "Good",      colour: "#84cc16",
+    meaning: "Most loans approved with standard rates" },
+  { min: 650, max: 699, label: "Fair",      colour: "#eab308",
+    meaning: "Loans possible but at higher interest" },
+  { min: 550, max: 649, label: "Poor",      colour: "#f97316",
+    meaning: "Loan applications likely rejected" },
+  { min: 300, max: 549, label: "Bad",       colour: "#ef4444",
+    meaning: "Blacklisted — even phone plans get rejected" },
+] as const;
 
 // NPC names for consistent personality
 export const NPCS = {

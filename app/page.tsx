@@ -1,13 +1,14 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import { useLanguage } from "@/lib/LanguageContext";
 
 // Pre-computed particle data to avoid hydration mismatch
 const particles = [
-  { x: 5, emoji: "💸", duration: 12, delay: 0 },
+  { x: 5,  emoji: "💸", duration: 12, delay: 0 },
   { x: 15, emoji: "💰", duration: 15, delay: 2 },
   { x: 25, emoji: "💳", duration: 11, delay: 4 },
   { x: 35, emoji: "🪙", duration: 18, delay: 1 },
@@ -24,10 +25,41 @@ const particles = [
   { x: 90, emoji: "💳", duration: 16, delay: 4 },
 ];
 
+// ── Bilingual content ──────────────────────────────────────────────────────
+const COPY = {
+  en: {
+    tagline:     "SURVIVE. DECIDE. SUFFER THE CONSEQUENCES.",
+    description: "Walk through a Malaysian neighborhood. Make financial decisions. Watch your credit score crumble or climb.",
+    warning:     "⚠️ EVERY CHOICE HAS A PRICE. SOME YOU PAY NOW. SOME YOU PAY LATER.",
+    cta:         "🎮 START GAME",
+    feature1:    "7 LOCATIONS",
+    feature2:    "HARD CHOICES",
+    feature3:    "REAL CONSEQUENCES",
+    footer:      "A FINANCIAL LITERACY GAME FOR THE REAL WORLD",
+    toggleLabel: "BM",
+    toggleHint:  "Tukar ke Bahasa Malaysia",
+  },
+  bm: {
+    tagline:     "TAHAN. PUTUSKAN. TANGGUNG AKIBATNYA.",
+    description: "Jelajah kawasan kejiranan Malaysia. Buat keputusan kewangan. Tengok skor kredit kau naik atau jatuh.",
+    warning:     "⚠️ SETIAP PILIHAN ADA HARGA. ADA YANG BAYAR SEKARANG. ADA YANG BAYAR NANTI.",
+    cta:         "🎮 MULA PERMAINAN",
+    feature1:    "7 LOKASI",
+    feature2:    "PILIHAN SUKAR",
+    feature3:    "AKIBAT SEBENAR",
+    footer:      "PERMAINAN LITERASI KEWANGAN UNTUK DUNIA NYATA",
+    toggleLabel: "EN",
+    toggleHint:  "Switch to English",
+  },
+} as const;
+
+type Lang = keyof typeof COPY;
+
 export default function Home() {
   const router = useRouter();
   const [glitchText, setGlitchText] = useState(false);
-  const [mounted, setMounted] = useState(false);
+  const [mounted, setMounted]       = useState(false);
+  const { lang, toggleLang }        = useLanguage();
 
   useEffect(() => {
     setMounted(true);
@@ -38,8 +70,48 @@ export default function Home() {
     return () => clearInterval(interval);
   }, []);
 
+  const t = COPY[lang as Lang];
+  const features = [
+    { icon: "🏠", label: t.feature1, color: "cyan" },
+    { icon: "💀", label: t.feature2, color: "red"  },
+    { icon: "📊", label: t.feature3, color: "yellow" },
+  ];
+
   return (
     <main className="min-h-screen bg-slate-900 flex flex-col items-center justify-center p-8 overflow-hidden relative">
+
+      {/* ── Language toggle — top right ── */}
+      <div className="absolute top-4 right-4 z-20">
+        <motion.button
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+          onClick={toggleLang}
+          title={t.toggleHint}
+          className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-800 border border-cyan-500/40 hover:border-cyan-400 transition-colors group"
+        >
+          {/* Flag */}
+          <span className="text-base">{lang === "en" ? "🇲🇾" : "🇬🇧"}</span>
+
+          {/* Current language label */}
+          <AnimatePresence mode="wait">
+            <motion.span
+              key={lang}
+              initial={{ opacity: 0, y: -6 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 6 }}
+              className="text-xs font-bold font-mono text-cyan-400 w-6 text-center"
+            >
+              {t.toggleLabel}
+            </motion.span>
+          </AnimatePresence>
+
+          {/* Toggle hint */}
+          <span className="text-xs text-slate-500 hidden sm:block group-hover:text-slate-300 transition-colors">
+            {t.toggleHint}
+          </span>
+        </motion.button>
+      </div>
+
       {/* Animated background grid */}
       <div
         className="absolute inset-0 opacity-20"
@@ -52,7 +124,7 @@ export default function Home() {
         }}
       />
 
-      {/* Floating money particles - only render after mount to avoid hydration issues */}
+      {/* Floating particles */}
       {mounted && particles.map((p, i) => (
         <motion.div
           key={i}
@@ -60,18 +132,13 @@ export default function Home() {
           style={{ left: `${p.x}%` }}
           initial={{ y: -50, rotate: 0, opacity: 0.6 }}
           animate={{ y: "100vh", rotate: 360, opacity: [0.6, 0.3, 0.6] }}
-          transition={{
-            duration: p.duration,
-            repeat: Infinity,
-            delay: p.delay,
-            ease: "linear",
-          }}
+          transition={{ duration: p.duration, repeat: Infinity, delay: p.delay, ease: "linear" }}
         >
           {p.emoji}
         </motion.div>
       ))}
 
-      {/* Vignette effect */}
+      {/* Vignette */}
       <div className="absolute inset-0 bg-gradient-radial from-transparent via-transparent to-black/50 pointer-events-none" />
 
       <motion.div
@@ -80,12 +147,10 @@ export default function Home() {
         transition={{ duration: 0.6 }}
         className="text-center max-w-3xl relative z-10"
       >
-        {/* Glitchy title */}
+        {/* Title — always English branding */}
         <motion.h1
           className={`text-6xl md:text-7xl font-black mb-4 ${glitchText ? "animate-glitch" : ""}`}
-          style={{
-            textShadow: "0 0 10px #00ffff, 0 0 20px #00ffff, 0 0 40px #00ffff",
-          }}
+          style={{ textShadow: "0 0 10px #00ffff, 0 0 20px #00ffff, 0 0 40px #00ffff" }}
         >
           <span className="gradient-text">HIDUP B40</span>
         </motion.h1>
@@ -97,24 +162,33 @@ export default function Home() {
           className="h-1 bg-gradient-to-r from-transparent via-cyan-400 to-transparent mb-6"
         />
 
-        <motion.p
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.4 }}
-          className="text-xl text-cyan-300 mb-4 font-mono"
-        >
-          SURVIVE. DECIDE. SUFFER THE CONSEQUENCES.
-        </motion.p>
+        {/* Tagline — bilingual */}
+        <AnimatePresence mode="wait">
+          <motion.p
+            key={`tagline-${lang}`}
+            initial={{ opacity: 0, y: -4 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 4 }}
+            transition={{ duration: 0.25 }}
+            className="text-xl text-cyan-300 mb-4 font-mono"
+          >
+            {t.tagline}
+          </motion.p>
+        </AnimatePresence>
 
-        <motion.p
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.6 }}
-          className="text-slate-400 mb-8 max-w-md mx-auto"
-        >
-          Walk through a Malaysian neighborhood. Make financial decisions.
-          Watch your credit score crumble or climb.
-        </motion.p>
+        {/* Description — bilingual */}
+        <AnimatePresence mode="wait">
+          <motion.p
+            key={`desc-${lang}`}
+            initial={{ opacity: 0, y: -4 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 4 }}
+            transition={{ duration: 0.25, delay: 0.05 }}
+            className="text-slate-400 mb-8 max-w-md mx-auto"
+          >
+            {t.description}
+          </motion.p>
+        </AnimatePresence>
 
         <motion.div
           initial={{ opacity: 0, scale: 0.9 }}
@@ -122,41 +196,53 @@ export default function Home() {
           transition={{ delay: 0.8 }}
           className="space-y-4"
         >
-          <p className="text-red-400 text-sm mb-6 font-mono animate-pulse">
-            ⚠️ EVERY CHOICE HAS A PRICE. SOME YOU PAY NOW. SOME YOU PAY LATER.
-          </p>
+          {/* Warning — bilingual */}
+          <AnimatePresence mode="wait">
+            <motion.p
+              key={`warn-${lang}`}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              className="text-red-400 text-sm mb-6 font-mono animate-pulse"
+            >
+              {t.warning}
+            </motion.p>
+          </AnimatePresence>
 
-          <motion.div
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-          >
+          {/* CTA button — bilingual */}
+          <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
             <Button
               size="lg"
               className="bg-gradient-to-r from-emerald-500 to-cyan-500 hover:from-emerald-400 hover:to-cyan-400 text-black font-bold px-12 py-7 text-xl rounded-xl border-2 border-white/20"
-              style={{
-                boxShadow: "0 0 20px #00ff88, 0 0 40px #00ff8844",
-              }}
+              style={{ boxShadow: "0 0 20px #00ff88, 0 0 40px #00ff8844" }}
               onClick={() => router.push("/setup")}
             >
-              🎮 START GAME
+              <AnimatePresence mode="wait">
+                <motion.span
+                  key={`cta-${lang}`}
+                  initial={{ opacity: 0, y: -6 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: 6 }}
+                  transition={{ duration: 0.15 }}
+                >
+                  {t.cta}
+                </motion.span>
+              </AnimatePresence>
             </Button>
           </motion.div>
         </motion.div>
 
-        {/* Feature cards */}
+        {/* Feature cards — bilingual labels */}
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 1, duration: 0.6 }}
           className="mt-16 grid grid-cols-3 gap-4"
         >
-          {[
-            { icon: "🏠", label: "7 LOCATIONS", color: "cyan" },
-            { icon: "💀", label: "HARD CHOICES", color: "red" },
-            { icon: "📊", label: "REAL CONSEQUENCES", color: "yellow" },
-          ].map((item, index) => (
+          {features.map((item, index) => (
             <motion.div
-              key={item.label}
+              key={item.label + lang}
               className={`p-4 rounded-xl bg-slate-800/50 border border-${item.color}-500/30`}
               whileHover={{
                 scale: 1.05,
@@ -173,20 +259,35 @@ export default function Home() {
               >
                 {item.icon}
               </motion.div>
-              <p className={`text-${item.color}-400 text-xs font-bold font-mono`}>{item.label}</p>
+              <AnimatePresence mode="wait">
+                <motion.p
+                  key={item.label}
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.2 }}
+                  className={`text-${item.color}-400 text-xs font-bold font-mono`}
+                >
+                  {item.label}
+                </motion.p>
+              </AnimatePresence>
             </motion.div>
           ))}
         </motion.div>
 
-        {/* Tagline */}
-        <motion.p
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 1.5 }}
-          className="mt-12 text-slate-500 text-sm font-mono"
-        >
-          A FINANCIAL LITERACY GAME FOR THE REAL WORLD
-        </motion.p>
+        {/* Footer tagline — bilingual */}
+        <AnimatePresence mode="wait">
+          <motion.p
+            key={`footer-${lang}`}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ delay: 1.5, duration: 0.3 }}
+            className="mt-12 text-slate-500 text-sm font-mono"
+          >
+            {t.footer}
+          </motion.p>
+        </AnimatePresence>
 
         {/* Credits */}
         <motion.p
