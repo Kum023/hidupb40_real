@@ -2,6 +2,7 @@
 
 import { motion, AnimatePresence } from "framer-motion";
 import { Sun, Coffee, Coins, Brain, Heart, AlertTriangle, TrendingDown, TrendingUp, Banknote } from "lucide-react";
+import { useT } from "@/lib/translations";
 
 interface WeekendActivity {
   id: string;
@@ -50,6 +51,7 @@ export function WeekendDialog({
   paydaySummary,
   onSelectActivity,
 }: WeekendDialogProps) {
+  const t = useT();
   const isFinalWeek = currentWeek === 4;
 
   const netAfterAutoDebits = paydaySummary
@@ -103,9 +105,9 @@ export function WeekendDialog({
               </div>
               <div>
                 <p className="text-xs uppercase tracking-wider text-cyan-400">
-                  Week {currentWeek} Complete!
+                  {t("weekComplete", { w: String(currentWeek) })}
                 </p>
-                <h2 className="text-xl font-bold text-white">Weekend — Payday 💰</h2>
+                <h2 className="text-xl font-bold text-white">{t("weekendPayday")}</h2>
               </div>
             </div>
 
@@ -119,34 +121,34 @@ export function WeekendDialog({
                 <div className="flex items-center gap-2 mb-3">
                   <Banknote className="w-4 h-4 text-emerald-400" />
                   <span className="text-xs font-bold uppercase tracking-wider text-emerald-400">
-                    This Week&apos;s Pay Slip
+                    {t("paySlip")}
                   </span>
                 </div>
 
                 <div className="space-y-1.5 text-sm font-mono">
                   {/* Salary */}
                   <div className="flex justify-between items-center">
-                    <span className="text-slate-400">Salary</span>
+                    <span className="text-slate-400">{t("salary")}</span>
                     <span className="text-emerald-400 font-bold">+RM {paydaySummary.weeklySalary}</span>
                   </div>
 
                   {/* Rent */}
                   <div className="flex justify-between items-center">
-                    <span className="text-slate-400">Rent (auto)</span>
+                    <span className="text-slate-400">{t("rentAuto")}</span>
                     <span className="text-red-400">−RM {paydaySummary.weeklyRent}</span>
                   </div>
 
                   {/* Debt installment */}
                   {paydaySummary.hasDebt && (
                     <div className="flex justify-between items-center">
-                      <span className="text-slate-400">{paydaySummary.debtLabel} (auto-debit)</span>
+                      <span className="text-slate-400">{paydaySummary.debtLabel} {t("autoDebit")}</span>
                       <span className="text-orange-400">−RM {paydaySummary.weeklyDebtMin}</span>
                     </div>
                   )}
 
                   {/* Divider */}
                   <div className="border-t border-slate-600 pt-1.5 mt-1.5 flex justify-between items-center">
-                    <span className="text-white font-bold">Take-home</span>
+                    <span className="text-white font-bold">{t("takeHome")}</span>
                     <span className={`font-bold text-base ${(netAfterAutoDebits ?? 0) >= 0 ? "text-emerald-400" : "text-red-400"}`}>
                       {(netAfterAutoDebits ?? 0) >= 0 ? "+" : ""}RM {netAfterAutoDebits}
                     </span>
@@ -168,7 +170,7 @@ export function WeekendDialog({
                 {/* Debt context */}
                 {paydaySummary.hasDebt && paydaySummary.currentDebt > 0 && (
                   <div className="mt-2 pt-2 border-t border-slate-700 flex items-center justify-between text-xs">
-                    <span className="text-slate-500">Remaining debt</span>
+                    <span className="text-slate-500">{t("remainingDebt")}</span>
                     <span className="text-red-400 font-mono">RM {paydaySummary.currentDebt.toLocaleString()}</span>
                   </div>
                 )}
@@ -177,7 +179,7 @@ export function WeekendDialog({
                 {paydaySummary.hasDebt && (netAfterAutoDebits ?? 0) < paydaySummary.weeklyDebtMin && (
                   <div className="mt-2 flex items-center gap-1.5 text-xs text-red-400">
                     <AlertTriangle className="w-3 h-3" />
-                    <span>Risk: Not enough to cover instalment — credit score will drop!</span>
+                    <span>{t("riskCredit")}</span>
                   </div>
                 )}
               </motion.div>
@@ -186,13 +188,13 @@ export function WeekendDialog({
             {isFinalWeek && (
               <div className="bg-purple-900/50 border border-purple-500/50 rounded-lg p-3 mb-4">
                 <p className="text-purple-300 text-sm">
-                  🏁 Final week! Your choices this month determine your financial outcome.
+                  {t("finalWeekMsg")}
                 </p>
               </div>
             )}
 
             <p className="text-slate-300 mb-4 text-sm">
-              After a long week, how will you recharge? (Your take-home gets adjusted after this choice.)
+              {t("weekendQuestion")}
             </p>
 
             {/* Activity Options */}
@@ -218,7 +220,7 @@ export function WeekendDialog({
                 </div>
                 <div className="mt-2 flex items-center gap-1 text-xs text-orange-400">
                   <AlertTriangle className="w-3 h-3" />
-                  <span>Skipping rest raises stress — even saving can cost you health!</span>
+                  <span>{t("skipRestWarning")}</span>
                 </div>
               </motion.div>
 
@@ -239,7 +241,7 @@ export function WeekendDialog({
                     <div className="flex items-center justify-between mb-2">
                       <span className="font-bold text-white">{activity.name}</span>
                       {!canAfford && (
-                        <span className="text-xs text-red-400">Cannot afford</span>
+                        <span className="text-xs text-red-400">{t("cantAfford")}</span>
                       )}
                     </div>
                     <p className="text-sm text-slate-400 mb-2">{activity.description}</p>
@@ -265,7 +267,7 @@ export function WeekendDialog({
             </div>
 
             <p className="text-xs text-slate-500 text-center">
-              Mental health matters. Skipping rest is a debt you pay later.
+              {t("mentalHealthNote")}
             </p>
           </motion.div>
         </motion.div>

@@ -2,6 +2,7 @@
 
 import { motion } from "framer-motion";
 import { CheckCircle2, Circle, Briefcase, ShoppingCart, Fuel, CreditCard } from "lucide-react";
+import { useT } from "@/lib/translations";
 
 interface WeeklyObjectives {
   workDaysCompleted: number;
@@ -19,19 +20,20 @@ interface ObjectivesPanelProps {
 }
 
 export function ObjectivesPanel({ objectives, currentWeek, currentDay, energy, workedToday }: ObjectivesPanelProps) {
+  const t = useT();
   const workComplete = objectives.workDaysCompleted >= 5;
   const debtRequired = currentWeek === 4;
 
   // Show today's work status for the work objective
   const todayWorkStatus = currentDay <= 5
-    ? (workedToday ? " (Today: Done)" : " (Today: Pending)")
+    ? (workedToday ? ` ${t("todayDone")}` : ` ${t("todayPending")}`)
     : "";
 
   const objectivesList = [
     {
       id: "work",
-      label: "Work",
-      progress: `${objectives.workDaysCompleted}/5 days${todayWorkStatus}`,
+      label: t("workLabel"),
+      progress: `${objectives.workDaysCompleted}/5${todayWorkStatus}`,
       complete: workComplete,
       icon: Briefcase,
       required: true,
@@ -39,26 +41,25 @@ export function ObjectivesPanel({ objectives, currentWeek, currentDay, energy, w
     },
     {
       id: "groceries",
-      label: "Buy Groceries",
+      label: t("buyGroceries"),
       complete: objectives.boughtGroceries,
       icon: ShoppingCart,
       required: true,
     },
     {
       id: "petrol",
-      label: "Fill Petrol",
+      label: t("fillPetrol"),
       complete: objectives.filledPetrol,
       icon: Fuel,
       required: true,
     },
     {
-      // Bank: optional extra payment — always visible as a bonus objective
       id: "debt",
-      label: "Bank: Extra Payment (+20 Credit)",
+      label: t("bankExtraPayment"),
       complete: objectives.paidDebt,
       icon: CreditCard,
-      required: false, // never mandatory — auto-debit handles minimum
-      hidden: false,   // always show so students know it's an option
+      required: false,
+      hidden: false,
     },
   ].filter((obj) => !obj.hidden);
 
@@ -74,7 +75,7 @@ export function ObjectivesPanel({ objectives, currentWeek, currentDay, energy, w
       allComplete ? "border-emerald-500/50" : lowEnergy && !allComplete ? "border-red-500/50 animate-pulse" : "border-cyan-500/30"
     }`}>
       <div className="flex justify-between items-center mb-3">
-        <h3 className="text-xs text-slate-400 uppercase tracking-wider">Weekly Objectives</h3>
+        <h3 className="text-xs text-slate-400 uppercase tracking-wider">{t("weeklyObjectives")}</h3>
         <span className={`text-xs font-mono font-bold ${
           allComplete ? "text-emerald-400" : "text-cyan-400"
         }`}>
@@ -152,7 +153,7 @@ export function ObjectivesPanel({ objectives, currentWeek, currentDay, energy, w
                 {objective.label}
               </span>
               <span className="text-xs bg-purple-900/50 text-purple-400 px-1.5 py-0.5 rounded font-mono">
-                BONUS
+                {t("bonus")}
               </span>
             </motion.div>
           );
@@ -166,7 +167,7 @@ export function ObjectivesPanel({ objectives, currentWeek, currentDay, energy, w
           className="mt-2 p-2 bg-red-900/50 border border-red-500/50 rounded-md"
         >
           <span className="text-xs text-red-400 font-bold">
-            Low energy! Complete objectives to avoid game over.
+            {t("lowEnergyWarning")}
           </span>
         </motion.div>
       )}
@@ -178,7 +179,7 @@ export function ObjectivesPanel({ objectives, currentWeek, currentDay, energy, w
           className="mt-2 p-2 bg-emerald-900/50 border border-emerald-500/50 rounded-md text-center"
         >
           <span className="text-xs text-emerald-400 font-bold">
-            All objectives complete! Ready for weekend.
+            {t("allObjComplete")}
           </span>
         </motion.div>
       )}

@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { motion } from "framer-motion";
 import { Loader2, Trophy } from "lucide-react";
+import { useT } from "@/lib/translations";
 
 interface Ending {
   title: string;
@@ -22,6 +23,7 @@ interface Ending {
 
 export default function EndingPage() {
   const router = useRouter();
+  const t = useT();
   const game = useQuery(api.games.getCurrentGame);
   const allDecisions = useQuery(
     api.games.getAllDecisions,
@@ -109,7 +111,7 @@ export default function EndingPage() {
     return (
       <div className="min-h-screen bg-slate-900 flex flex-col items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-emerald-400" />
-        <p className="text-slate-400 mt-4">Generating your ending...</p>
+        <p className="text-slate-400 mt-4">{t("generatingEnding")}</p>
       </div>
     );
   }
@@ -127,7 +129,7 @@ export default function EndingPage() {
           className="text-center"
         >
           <h1 className="text-4xl font-bold text-white mb-2">{ending.title}</h1>
-          <p className="text-slate-400">Your 12-week journey has ended</p>
+          <p className="text-slate-400">{t("yourJourneyEnded")}</p>
         </motion.div>
 
         <motion.div
@@ -152,19 +154,19 @@ export default function EndingPage() {
         >
           <Card className="bg-slate-800 border-slate-700">
             <CardHeader className="pb-2">
-              <CardTitle className="text-lg text-white">Final Stats</CardTitle>
+              <CardTitle className="text-lg text-white">{t("finalStats")}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-2">
               <div className="flex justify-between">
-                <span className="text-slate-400">Money</span>
+                <span className="text-slate-400">{t("money")}</span>
                 <span className="text-emerald-400">RM {game.money.toLocaleString()}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-slate-400">Debt</span>
+                <span className="text-slate-400">{t("debt")}</span>
                 <span className="text-red-400">RM {game.debt.toLocaleString()}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-slate-400">Credit Score</span>
+                <span className="text-slate-400">{t("creditScore")}</span>
                 <span className="text-white">{game.creditScore}</span>
               </div>
             </CardContent>
@@ -172,15 +174,15 @@ export default function EndingPage() {
 
           <Card className="bg-slate-800 border-slate-700">
             <CardHeader className="pb-2">
-              <CardTitle className="text-lg text-white">Scores</CardTitle>
+              <CardTitle className="text-lg text-white">{t("scores")}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-2">
               <div className="flex justify-between">
-                <span className="text-slate-400">Financial</span>
+                <span className="text-slate-400">{t("financial")}</span>
                 <span className="text-emerald-400">{ending.summary.financialScore}/100</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-slate-400">Health</span>
+                <span className="text-slate-400">{t("health")}</span>
                 <span className="text-white">{ending.summary.healthScore}/100</span>
               </div>
             </CardContent>
@@ -194,7 +196,7 @@ export default function EndingPage() {
         >
           <Card className="bg-slate-800 border-slate-700">
             <CardHeader className="pb-2">
-              <CardTitle className="text-lg text-white">Lessons Learned</CardTitle>
+              <CardTitle className="text-lg text-white">{t("lessonsLearned")}</CardTitle>
             </CardHeader>
             <CardContent>
               <ul className="space-y-2">
@@ -220,7 +222,7 @@ export default function EndingPage() {
             <Card className="bg-gradient-to-r from-yellow-600/20 to-amber-600/20 border-yellow-500/50">
               <CardContent className="py-4 flex items-center justify-center gap-3">
                 <Trophy className="h-6 w-6 text-yellow-400" />
-                <span className="text-yellow-400 font-bold">You made it to the Top 10!</span>
+                <span className="text-yellow-400 font-bold">{t("topTen")}</span>
                 <Trophy className="h-6 w-6 text-yellow-400" />
               </CardContent>
             </Card>
@@ -242,14 +244,14 @@ export default function EndingPage() {
               className="border-emerald-600 text-emerald-400 hover:bg-emerald-600/20"
               onClick={() => router.push("/leaderboard")}
             >
-              View Leaderboard
+              {t("viewLeaderboard")}
             </Button>
             <Button
               size="lg"
               className="bg-emerald-600 hover:bg-emerald-700"
               onClick={() => router.push("/")}
             >
-              Play Again
+              {t("playAgain")}
             </Button>
           </div>
         </motion.div>

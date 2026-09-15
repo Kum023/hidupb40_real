@@ -28,6 +28,7 @@ export const generateScenario = action({
         week: v.number(),
       })
     ),
+    language: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     const userPrompt = buildScenarioPrompt({
@@ -44,6 +45,10 @@ export const generateScenario = action({
     });
 
     try {
+      const langInstruction = args.language === "bm"
+        ? "\n\nIMPORTANT: Generate ALL narration, NPC dialogue, and choice text in Bahasa Malaysia. Use natural Malaysian Malay. Keep any financial terms (RM, credit score) as-is."
+        : "";
+
       const message = await anthropic.messages.create({
         model: "claude-3-5-haiku-20241022",
         max_tokens: 1024,
@@ -53,7 +58,7 @@ export const generateScenario = action({
             content: userPrompt,
           },
         ],
-        system: SCENARIO_SYSTEM_PROMPT,
+        system: SCENARIO_SYSTEM_PROMPT + langInstruction,
       });
 
       const content = message.content[0];
@@ -99,6 +104,7 @@ export const generateEnding = action({
         week: v.number(),
       })
     ),
+    language: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     const userPrompt = buildEndingPrompt({
@@ -113,6 +119,10 @@ export const generateEnding = action({
     });
 
     try {
+      const langInstruction = args.language === "bm"
+        ? "\n\nIMPORTANT: Generate ALL narration, title, epilogue, and lesson text in Bahasa Malaysia. Use natural Malaysian Malay."
+        : "";
+
       const message = await anthropic.messages.create({
         model: "claude-3-5-haiku-20241022",
         max_tokens: 1024,
@@ -122,7 +132,7 @@ export const generateEnding = action({
             content: userPrompt,
           },
         ],
-        system: ENDING_SYSTEM_PROMPT,
+        system: ENDING_SYSTEM_PROMPT + langInstruction,
       });
 
       const content = message.content[0];

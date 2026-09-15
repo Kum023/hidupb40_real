@@ -22,11 +22,15 @@ import { LocationId, PERSONA_MAPS, KL_MAP, SPECIAL_EVENTS, WEEKEND_ACTIVITIES, P
 import { Scenario, SpecialEvent, WeekendActivity } from "@/lib/types";
 import { motion } from "framer-motion";
 import { Loader2, RotateCcw, Calendar, CreditCard } from "lucide-react";
+import { useT } from "@/lib/translations";
+import { useLanguage } from "@/lib/LanguageContext";
 
 const GAME_ID_KEY = "b40_current_game_id";
 
 export default function GamePage() {
   const router = useRouter();
+  const t = useT();
+  const { lang } = useLanguage();
 
   // Get gameId from localStorage to prevent character switching bug
   const [gameId, setGameId] = useState<Id<"games"> | null>(null);
@@ -389,6 +393,7 @@ export default function GamePage() {
                 location: d.location,
                 week: d.week,
               })) || [],
+            language: lang,
           });
           setCurrentScenario(scenario as Scenario);
         } catch (error) {
@@ -444,6 +449,7 @@ export default function GamePage() {
               location: d.location,
               week: d.week,
             })) || [],
+          language: lang,
         });
         setCurrentScenario(scenario as Scenario);
 
@@ -643,7 +649,7 @@ export default function GamePage() {
 
   const handleResetGame = useCallback(async () => {
     if (!game) return;
-    if (!confirm("Reset game and start over?")) return;
+    if (!confirm(t("resetConfirm"))) return;
 
     try {
       await resetGame({ gameId: game._id });
@@ -743,7 +749,7 @@ export default function GamePage() {
           className="flex justify-between items-center"
         >
           <div className="text-slate-400 text-sm">
-            Current: {(PERSONA_MAPS[game.personaId] || KL_MAP).locations[game.currentLocation as LocationId]?.name || "Unknown"}
+            {t("current")}: {(PERSONA_MAPS[game.personaId] || KL_MAP).locations[game.currentLocation as LocationId]?.name || "Unknown"}
           </div>
 
           <div className="flex gap-2 items-center">
@@ -754,7 +760,7 @@ export default function GamePage() {
                   ? "bg-emerald-500/20 text-emerald-400"
                   : "bg-amber-500/20 text-amber-400"
               }`}>
-                {game.workedToday ? "Worked Today" : "Not Worked Yet"}
+                {game.workedToday ? t("workedToday") : t("notWorkedYet")}
               </div>
             )}
 
@@ -769,7 +775,7 @@ export default function GamePage() {
                 title="Pay RM 200 extra above your minimum instalment to boost your credit score by +20"
               >
                 <CreditCard className="w-4 h-4 mr-2" />
-                Extra Payment (−RM200, +20 Credit)
+                {t("extraPaymentBtn")}
               </Button>
             )}
 
@@ -782,7 +788,7 @@ export default function GamePage() {
                 title={game.workedToday ? "Proceed to the next day" : "You need to work first! Click to apply leave or go to office."}
               >
                 <Calendar className="w-4 h-4 mr-2" />
-                {game.workedToday ? "Next Day" : "End Day (Work Required)"}
+                {game.workedToday ? t("nextDay") : t("endDayWorkReq")}
               </Button>
             )}
 
@@ -791,12 +797,12 @@ export default function GamePage() {
                 onClick={() => setShowWeekendDialog(true)}
                 className="bg-cyan-600 hover:bg-cyan-700"
               >
-                Weekend Time!
+                {t("weekendTime")}
               </Button>
             )}
             {energyRemaining <= 0 && !weekComplete?.complete && (
               <div className="text-red-400 text-sm mr-2 flex items-center">
-                Energy depleted! Complete objectives to continue.
+                {t("energyDepleted")}
               </div>
             )}
             <Button

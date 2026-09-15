@@ -7,6 +7,7 @@ import { Coins, Heart, Brain, TrendingUp, Calendar, Zap } from "lucide-react";
 import { EnergyBar } from "./EnergyBar";
 import { ObjectivesPanel } from "./ObjectivesPanel";
 import { CREDIT_SCORE_BANDS } from "@/lib/constants";
+import { useT } from "@/lib/translations";
 
 interface WeeklyObjectives {
   workDaysCompleted: number;
@@ -40,6 +41,7 @@ export function StatsBar({
   weeklyObjectives,
   workedToday,
 }: StatsBarProps) {
+  const t = useT();
   const [prevMoney, setPrevMoney] = useState(money);
   const [moneyDiff, setMoneyDiff] = useState(0);
   const [showDiff, setShowDiff] = useState(false);
@@ -93,11 +95,11 @@ export function StatsBar({
         <div className="flex items-center gap-2">
           <Calendar className="w-4 h-4 text-cyan-400" />
           <span className="font-mono text-cyan-300">
-            WEEK <span className="text-white font-bold text-lg">{week}</span>
+            {t("week")} <span className="text-white font-bold text-lg">{week}</span>
             <span className="text-slate-500 mx-1">/</span>
             <span className="text-slate-400">4</span>
             <span className="text-slate-500 mx-2">|</span>
-            DAY <span className="text-white font-bold text-lg">{day}</span>
+            {t("day")} <span className="text-white font-bold text-lg">{day}</span>
             <span className="text-slate-500 mx-1">/</span>
             <span className="text-slate-400">5</span>
           </span>
@@ -124,7 +126,7 @@ export function StatsBar({
             >
               <Coins className="w-5 h-5 text-yellow-400" />
             </motion.div>
-            <span className="text-xs text-slate-400 uppercase tracking-wider">Cash</span>
+            <span className="text-xs text-slate-400 uppercase tracking-wider">{t("cash")}</span>
           </div>
           <div className="relative">
             <motion.span
@@ -155,7 +157,7 @@ export function StatsBar({
         <div className="bg-slate-800/80 rounded-lg p-3 border border-red-500/30">
           <div className="flex items-center gap-2 mb-1">
             <span className="text-red-400 text-lg">💀</span>
-            <span className="text-xs text-slate-400 uppercase tracking-wider">Debt</span>
+            <span className="text-xs text-slate-400 uppercase tracking-wider">{t("debt")}</span>
           </div>
           <span className="text-2xl font-bold font-mono text-red-400">
             RM {debt.toLocaleString()}
@@ -168,7 +170,7 @@ export function StatsBar({
         <div className="flex justify-between items-center mb-2">
           <div className="flex items-center gap-2">
             <TrendingUp className="w-5 h-5 text-purple-400" />
-            <span className="text-xs text-slate-400 uppercase tracking-wider">Credit Score</span>
+            <span className="text-xs text-slate-400 uppercase tracking-wider">{t("creditScore")}</span>
           </div>
           <motion.span
             key={creditScore}
@@ -205,10 +207,10 @@ export function StatsBar({
           </div>
         </div>
         <div className="flex justify-between text-xs text-slate-500 mt-1 font-mono">
-          <span>POOR</span>
-          <span>FAIR</span>
-          <span>GOOD</span>
-          <span>EXCELLENT</span>
+          <span>{t("poor")}</span>
+          <span>{t("fair")}</span>
+          <span>{t("good")}</span>
+          <span>{t("excellent")}</span>
         </div>
       </div>
 
@@ -218,7 +220,7 @@ export function StatsBar({
           <div className="flex justify-between items-center mb-2">
             <div className="flex items-center gap-2">
               <Heart className={`w-5 h-5 ${health < 30 ? "text-red-500 animate-pulse" : "text-pink-400"}`} />
-              <span className="text-xs text-slate-400 uppercase tracking-wider">Health</span>
+              <span className="text-xs text-slate-400 uppercase tracking-wider">{t("health")}</span>
             </div>
             <span className={`font-bold font-mono ${health < 30 ? "text-red-500 neon-red" : health < 50 ? "text-orange-400" : "text-pink-400"}`}>
               {health}%
@@ -243,7 +245,7 @@ export function StatsBar({
           <div className="flex justify-between items-center mb-2">
             <div className="flex items-center gap-2">
               <Brain className={`w-5 h-5 ${stress > 70 ? "text-red-500 animate-pulse" : "text-orange-400"}`} />
-              <span className="text-xs text-slate-400 uppercase tracking-wider">Stress</span>
+              <span className="text-xs text-slate-400 uppercase tracking-wider">{t("stress")}</span>
             </div>
             <span className={`font-bold font-mono ${stress > 70 ? "text-red-500 neon-red" : stress > 50 ? "text-orange-400" : "text-green-400"}`}>
               {stress}%
@@ -275,7 +277,7 @@ export function StatsBar({
             className="bg-red-900/50 border border-red-500 rounded-lg p-2 text-center"
           >
             <span className="text-red-400 text-sm font-bold animate-pulse">
-              {health < 30 ? "CRITICAL HEALTH!" : stress > 70 ? "BURNOUT WARNING!" : "BROKE!"}
+              {health < 30 ? t("criticalHealth") : stress > 70 ? t("burnoutWarning") : t("broke")}
             </span>
           </motion.div>
         )}
