@@ -32,6 +32,7 @@ const COPY = {
     description: "Walk through a Malaysian neighborhood. Make financial decisions. Watch your credit score crumble or climb.",
     warning:     "⚠️ EVERY CHOICE HAS A PRICE. SOME YOU PAY NOW. SOME YOU PAY LATER.",
     cta:         "🎮 START GAME",
+    classroomCta: "🎓 CLASSROOM MODE",
     feature1:    "7 LOCATIONS",
     feature2:    "HARD CHOICES",
     feature3:    "REAL CONSEQUENCES",
@@ -44,6 +45,7 @@ const COPY = {
     description: "Jelajah kawasan kejiranan Malaysia. Buat keputusan kewangan. Tengok skor kredit kau naik atau jatuh.",
     warning:     "⚠️ SETIAP PILIHAN ADA HARGA. ADA YANG BAYAR SEKARANG. ADA YANG BAYAR NANTI.",
     cta:         "🎮 MULA PERMAINAN",
+    classroomCta: "🎓 MOD BILIK DARJAH",
     feature1:    "7 LOKASI",
     feature2:    "PILIHAN SUKAR",
     feature3:    "AKIBAT SEBENAR",
@@ -210,27 +212,51 @@ export default function Home() {
             </motion.p>
           </AnimatePresence>
 
-          {/* CTA button — bilingual */}
-          <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-            <Button
-              size="lg"
-              className="bg-gradient-to-r from-emerald-500 to-cyan-500 hover:from-emerald-400 hover:to-cyan-400 text-black font-bold px-12 py-7 text-xl rounded-xl border-2 border-white/20"
-              style={{ boxShadow: "0 0 20px #00ff88, 0 0 40px #00ff8844" }}
-              onClick={() => router.push("/setup")}
-            >
-              <AnimatePresence mode="wait">
-                <motion.span
-                  key={`cta-${lang}`}
-                  initial={{ opacity: 0, y: -6 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: 6 }}
-                  transition={{ duration: 0.15 }}
-                >
-                  {t.cta}
-                </motion.span>
-              </AnimatePresence>
-            </Button>
-          </motion.div>
+          {/* CTA buttons — bilingual */}
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-2">
+            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} className="w-full sm:w-auto">
+              <Button
+                size="lg"
+                className="w-full sm:w-auto bg-gradient-to-r from-emerald-500 to-cyan-500 hover:from-emerald-400 hover:to-cyan-400 text-black font-bold px-8 sm:px-12 py-6 sm:py-7 text-lg sm:text-xl rounded-xl border-2 border-white/20 shadow-lg cursor-pointer"
+                style={{ boxShadow: "0 0 20px #00ff88, 0 0 40px #00ff8844" }}
+                onClick={() => router.push("/setup")}
+              >
+                <AnimatePresence mode="wait">
+                  <motion.span
+                    key={`cta-${lang}`}
+                    initial={{ opacity: 0, y: -6 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: 6 }}
+                    transition={{ duration: 0.15 }}
+                  >
+                    {t.cta}
+                  </motion.span>
+                </AnimatePresence>
+              </Button>
+            </motion.div>
+
+            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} className="w-full sm:w-auto">
+              <Button
+                size="lg"
+                variant="outline"
+                className="w-full sm:w-auto bg-slate-800/90 hover:bg-slate-700/90 text-cyan-300 hover:text-cyan-200 border-2 border-cyan-500/50 hover:border-cyan-400 font-bold px-6 sm:px-8 py-6 sm:py-7 text-base sm:text-lg rounded-xl shadow-lg backdrop-blur-sm cursor-pointer"
+                style={{ boxShadow: "0 0 15px rgba(0, 212, 255, 0.2)" }}
+                onClick={() => router.push("/classroom")}
+              >
+                <AnimatePresence mode="wait">
+                  <motion.span
+                    key={`classroom-${lang}`}
+                    initial={{ opacity: 0, y: -6 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: 6 }}
+                    transition={{ duration: 0.15 }}
+                  >
+                    {t.classroomCta}
+                  </motion.span>
+                </AnimatePresence>
+              </Button>
+            </motion.div>
+          </div>
         </motion.div>
 
         {/* Feature cards — bilingual labels */}
