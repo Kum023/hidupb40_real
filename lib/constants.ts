@@ -154,7 +154,6 @@ export const KL_MAP: MapConfig = {
 // Penang Map - Island Paradise Theme with beaches and sea
 export const PENANG_MAP: MapConfig = {
   locations: {
-    // Column 1 (x: 8)
     home: {
       id: "home",
       name: "Rumah",
@@ -171,25 +170,6 @@ export const PENANG_MAP: MapConfig = {
       y: 50,
       icon: "🏪",
       objectiveType: "groceries",
-    },
-    post_office: {
-      id: "post_office",
-      name: "Pejabat Pos",
-      description: "Post office for bills and remittances",
-      x: 8,
-      y: 15,
-      icon: "📮",
-    },
-
-    // Column 2 (x: 35)
-    office: {
-      id: "office",
-      name: "Pejabat",
-      description: "Your office in George Town",
-      x: 35,
-      y: 85,
-      icon: "🏢",
-      objectiveType: "work",
     },
     petrol: {
       id: "petrol",
@@ -208,44 +188,58 @@ export const PENANG_MAP: MapConfig = {
       y: 15,
       icon: "💡",
     },
-
-    // Column 3 (x: 63)
-    penang_hill: {
-      id: "penang_hill",
-      name: "Penang Hill",
-      description: "Take the funicular up for fresh air and beautiful views - cheap and relaxing!",
-      x: 63,
+    office: {
+      id: "office",
+      name: "Pejabat",
+      description: "Your office in George Town",
+      x: 35,
       y: 85,
-      icon: "⛰️",
-      isWeekendOnly: true,
+      icon: "🏢",
+      objectiveType: "work",
     },
-    shopping_mall: {
-      id: "shopping_mall",
-      name: "Gurney Plaza",
-      description: "Shopping mall for weekend window shopping with your child",
-      x: 63,
-      y: 50,
-      icon: "🏬",
-      isWeekendOnly: true,
+    bank: {
+      id: "bank",
+      name: "Bank",
+      description: "Bank beside TNB office - check credit score or pay debt",
+      x: 50,
+      y: 15,
+      icon: "🏦",
+      // No auto objectiveType - debt payment is manual via button
+    },
+    // New locations
+    post_office: {
+      id: "post_office",
+      name: "Pejabat Pos",
+      description: "Post office for bills and remittances",
+      x: 8,
+      y: 15,
+      icon: "📮",
     },
     restaurant: {
       id: "restaurant",
       name: "Restoran",
       description: "Family-friendly restaurant for meals with your child",
-      x: 63,
+      x: 65,
       y: 15,
       icon: "🍽️",
     },
-
-    // Column 4 (x: 90)
-    bank: {
-      id: "bank",
-      name: "Bank",
-      description: "Bank in George Town - check credit score or pay debt",
-      x: 90,
-      y: 15,
-      icon: "🏦",
-      // No auto objectiveType - debt payment is manual via button
+    shopping_mall: {
+      id: "shopping_mall",
+      name: "Gurney Plaza",
+      description: "Shopping mall for weekend window shopping with your child",
+      x: 65,
+      y: 50,
+      icon: "🏬",
+      isWeekendOnly: true,
+    },
+    penang_hill: {
+      id: "penang_hill",
+      name: "Penang Hill",
+      description: "Take the funicular up for fresh air and beautiful views - cheap and relaxing!",
+      x: 65,
+      y: 85,
+      icon: "⛰️",
+      isWeekendOnly: true,
     },
   },
   theme: {
@@ -256,7 +250,7 @@ export const PENANG_MAP: MapConfig = {
     roadStyle: "island",
   },
   landmarks: [
-    { icon: "🏖️", name: "Batu Ferringhi", x: 49, y: 32, size: "lg" },
+    { icon: "🏖️", name: "Batu Ferringhi", x: 50, y: 30, size: "lg" },
   ],
 };
 

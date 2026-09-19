@@ -746,7 +746,7 @@ export default function GamePage() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.4 }}
-          className="flex flex-col sm:flex-row gap-2 justify-between items-start sm:items-center"
+          className="flex justify-between items-center"
         >
           <div className="text-slate-400 text-sm">
             {t("current")}: {(PERSONA_MAPS[game.personaId] || KL_MAP).locations[game.currentLocation as LocationId]?.name || "Unknown"}

@@ -90,7 +90,7 @@ export function GameMap({
 
           {/* Waves pattern */}
           <div
-            className="absolute inset-0 opacity-30 pointer-events-none"
+            className="absolute inset-0 opacity-30"
             style={{
               backgroundImage: `
                 repeating-linear-gradient(
@@ -106,10 +106,10 @@ export function GameMap({
 
           {/* Island land mass - left side */}
           <div
-            className="absolute left-0 top-0 bottom-0 w-[94%] pointer-events-none"
+            className="absolute left-0 top-0 bottom-0 w-[75%]"
             style={{
               background: "linear-gradient(135deg, #4a7c59 0%, #3d6b4f 50%, #2d5a3f 100%)",
-              clipPath: "polygon(0 0, 96% 0, 100% 30%, 97% 50%, 100% 70%, 94% 100%, 0 100%)",
+              clipPath: "polygon(0 0, 85% 0, 100% 30%, 95% 50%, 100% 70%, 80% 100%, 0 100%)",
               boxShadow: "inset -10px 0 30px rgba(0,0,0,0.2)",
             }}
           >
@@ -128,7 +128,7 @@ export function GameMap({
         </div>
       )}
 
-      {/* Roads - 2 horizontal + vertical grid */}
+      {/* Roads - 2 horizontal + 2 vertical centered grid */}
       <svg className="absolute inset-0 w-full h-full pointer-events-none">
         {isCity ? (
           // CITY ROADS - Clean centered grid
@@ -154,22 +154,19 @@ export function GameMap({
             <line x1="calc(82% + 12px)" y1="0" x2="calc(82% + 12px)" y2="100%" stroke="#fff" strokeWidth="2" strokeDasharray="18 10" opacity="0.6" />
           </>
         ) : (
-          // ISLAND ROADS - 2 horizontal + 3 vertical sandy paths
+          // ISLAND ROADS - 2 horizontal + 2 vertical sandy paths
           <>
             {/* Horizontal path - upper */}
-            <rect x="5%" y="30%" width="90%" height="14" fill="#c4a76c" rx="4" opacity="0.9" />
+            <rect x="5%" y="32%" width="65%" height="14" fill="#c4a76c" rx="4" opacity="0.9" />
 
             {/* Horizontal path - lower */}
-            <rect x="5%" y="60%" width="90%" height="14" fill="#c4a76c" rx="4" opacity="0.9" />
+            <rect x="10%" y="62%" width="60%" height="14" fill="#c4a76c" rx="4" opacity="0.9" />
 
             {/* Vertical path - left */}
-            <rect x="20%" y="10%" width="14" height="80%" fill="#c4a76c" rx="4" opacity="0.9" />
+            <rect x="25%" y="10%" width="14" height="80%" fill="#c4a76c" rx="4" opacity="0.9" />
 
             {/* Vertical path - middle */}
-            <rect x="48%" y="10%" width="14" height="80%" fill="#c4a76c" rx="4" opacity="0.9" />
-
-            {/* Vertical path - right */}
-            <rect x="76%" y="10%" width="14" height="80%" fill="#c4a76c" rx="4" opacity="0.9" />
+            <rect x="55%" y="10%" width="14" height="80%" fill="#c4a76c" rx="4" opacity="0.9" />
           </>
         )}
       </svg>
@@ -182,7 +179,7 @@ export function GameMap({
           {[15, 45, 75].map((x, i) => (
             <div
               key={`car-h1-${i}`}
-              className="absolute text-base pointer-events-none select-none"
+              className="absolute text-base"
               style={{
                 left: `${x}%`,
                 top: "29%",
@@ -196,7 +193,7 @@ export function GameMap({
           {[20, 50, 70].map((x, i) => (
             <div
               key={`car-h2-${i}`}
-              className="absolute text-base pointer-events-none select-none"
+              className="absolute text-base"
               style={{
                 left: `${x}%`,
                 top: "59%",
@@ -210,10 +207,10 @@ export function GameMap({
       ) : (
         // Island decorations - palm trees, boats
         <>
-          {[{ x: 5, y: 25 }, { x: 5, y: 70 }, { x: 48, y: 15 }, { x: 45, y: 75 }].map((pos, i) => (
+          {[{ x: 5, y: 25 }, { x: 8, y: 70 }, { x: 48, y: 15 }, { x: 45, y: 75 }].map((pos, i) => (
             <div
               key={i}
-              className="absolute text-xl sm:text-2xl pointer-events-none select-none"
+              className="absolute text-2xl"
               style={{
                 left: `${pos.x}%`,
                 top: `${pos.y}%`,
@@ -224,10 +221,10 @@ export function GameMap({
               🌴
             </div>
           ))}
-          {[{ x: 92, y: 45 }, { x: 94, y: 75 }].map((pos, i) => (
+          {[{ x: 85, y: 35 }, { x: 88, y: 60 }].map((pos, i) => (
             <div
               key={i}
-              className="absolute text-lg sm:text-xl pointer-events-none select-none"
+              className="absolute text-xl"
               style={{
                 left: `${pos.x}%`,
                 top: `${pos.y}%`,
@@ -244,7 +241,7 @@ export function GameMap({
       {landmarks.map((landmark, i) => (
         <div
           key={i}
-          className="absolute flex flex-col items-center pointer-events-none select-none"
+          className="absolute flex flex-col items-center pointer-events-none"
           style={{
             left: `${landmark.x}%`,
             top: `${landmark.y}%`,
@@ -253,7 +250,7 @@ export function GameMap({
           }}
         >
           <span
-            className={landmark.size === "lg" ? "text-2xl sm:text-3xl" : landmark.size === "md" ? "text-xl sm:text-2xl" : "text-lg sm:text-xl"}
+            className={landmark.size === "lg" ? "text-3xl" : landmark.size === "md" ? "text-2xl" : "text-xl"}
             style={{
               filter: "drop-shadow(2px 2px 1px rgba(0,0,0,0.5))",
             }}
@@ -261,7 +258,7 @@ export function GameMap({
             {landmark.icon}
           </span>
           <span
-            className="text-[6px] sm:text-[7px] font-bold mt-0.5 px-1 py-0.5 rounded"
+            className="text-[7px] font-bold mt-0.5 px-1 py-0.5 rounded"
             style={{
               fontFamily: "var(--font-pixel), monospace",
               backgroundColor: isCity ? "rgba(0,0,0,0.7)" : "rgba(0,50,30,0.7)",
@@ -296,52 +293,45 @@ export function GameMap({
         return (
           <div
             key={id}
-            role="button"
-            tabIndex={0}
-            className={`absolute transform -translate-x-1/2 -translate-y-1/2 flex flex-col items-center transition-transform duration-150 touch-manipulation select-none ${
+            className={`absolute transform -translate-x-1/2 -translate-y-1/2 flex flex-col items-center transition-transform duration-150 ${
               isLocationDisabled ? "cursor-not-allowed" : "cursor-pointer"
             } ${isDisabledByWeekend ? "opacity-40 grayscale" : ""} ${
               isHovered && !isLocationDisabled ? "scale-110 -translate-y-[52%]" : ""
             } ${isHovered && isDisabledByWeekend ? "scale-105" : ""}`}
             style={{ left: `${location.x}%`, top: `${location.y}%`, zIndex: isHovered ? 30 : (isCurrentLocation ? 20 : 10) }}
             onClick={() => !isLocationDisabled && onLocationClick(id as LocationId)}
-            onKeyDown={(e) => {
-              if ((e.key === "Enter" || e.key === " ") && !isLocationDisabled) {
-                onLocationClick(id as LocationId);
-              }
-            }}
             onMouseEnter={() => setHoveredLocation(id)}
             onMouseLeave={() => setHoveredLocation(null)}
           >
             {/* Building shadow */}
             <div
-              className="absolute -bottom-1 w-12 h-2 rounded-full pointer-events-none"
+              className="absolute -bottom-1 w-12 h-2 rounded-full"
               style={{ backgroundColor: "rgba(0,0,0,0.4)", filter: "blur(2px)" }}
             />
 
             {/* Pokemon-style building */}
             <div
-              className="relative px-1 pt-1 pb-1 sm:pb-1.5 border-[2px] sm:border-[3px] flex flex-col items-center"
+              className="relative px-1 pt-1 pb-1.5 border-[3px] flex flex-col items-center"
               style={{
                 backgroundColor: sprite.bg,
                 borderColor: sprite.border,
                 boxShadow: `
-                  inset -2px -2px 0 ${sprite.shadow},
-                  inset 2px 2px 0 rgba(255,255,255,0.25),
-                  2px 2px 0 rgba(0,0,0,0.4)
+                  inset -3px -3px 0 ${sprite.shadow},
+                  inset 3px 3px 0 rgba(255,255,255,0.25),
+                  3px 3px 0 rgba(0,0,0,0.4)
                 `,
               }}
             >
               {/* Roof */}
               <div
-                className="absolute -top-2.5 left-1/2 -translate-x-1/2 w-12 sm:w-14 h-2.5"
+                className="absolute -top-2.5 left-1/2 -translate-x-1/2 w-14 h-2.5"
                 style={{
                   backgroundColor: sprite.border,
                   clipPath: "polygon(15% 100%, 50% 0%, 85% 100%)",
                   boxShadow: "inset 0 -2px 0 " + sprite.shadow,
                 }}
               />
-              <span className="text-lg sm:text-xl" style={{ filter: "drop-shadow(1px 1px 0 rgba(0,0,0,0.4))" }}>
+              <span className="text-xl" style={{ filter: "drop-shadow(1px 1px 0 rgba(0,0,0,0.4))" }}>
                 {location.icon}
               </span>
 
@@ -355,7 +345,7 @@ export function GameMap({
               {/* Objective indicator */}
               {location.objectiveType && (
                 <div
-                  className="absolute -bottom-3 left-1/2 -translate-x-1/2 text-[7px] sm:text-[8px] px-1 rounded font-bold"
+                  className="absolute -bottom-3 left-1/2 -translate-x-1/2 text-[8px] px-1 rounded font-bold"
                   style={{
                     backgroundColor: "#000",
                     color: location.objectiveType === "work" ? "#fbbf24" : "#22c55e",
@@ -371,7 +361,7 @@ export function GameMap({
 
             {/* Name plate */}
             <div
-              className="relative mt-1 px-1 sm:px-1.5 py-0.5 border sm:border-2 text-center whitespace-nowrap max-w-[70px] sm:max-w-none truncate"
+              className="relative mt-1.5 px-1.5 py-0.5 border-2 text-center whitespace-nowrap"
               style={{
                 backgroundColor: isCurrentLocation ? "#fff" : "#1a1a2e",
                 borderColor: isCurrentLocation ? "#ffd700" : "#3d3d5c",
@@ -381,7 +371,7 @@ export function GameMap({
               }}
             >
               <span
-                className="text-[5px] sm:text-[6px] font-bold uppercase block truncate"
+                className="text-[6px] font-bold uppercase"
                 style={{
                   fontFamily: "var(--font-pixel), monospace",
                   color: isCurrentLocation ? "#1a1a2e" : "#fff",
@@ -393,7 +383,7 @@ export function GameMap({
               {/* Objective indicator */}
               {needsObjective && !isLocationDisabled && (
                 <span
-                  className="absolute -right-1 -top-1 flex h-3 w-3 pointer-events-none"
+                  className="absolute -right-1 -top-1 flex h-3 w-3"
                 >
                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-yellow-400 opacity-75"></span>
                   <span className="relative inline-flex rounded-full h-3 w-3 bg-yellow-500 border border-yellow-600 text-[6px] font-bold text-yellow-900 items-center justify-center">!</span>
@@ -403,7 +393,7 @@ export function GameMap({
 
             {/* Weekend-only tooltip on hover */}
             {isHovered && isDisabledByWeekend && (
-              <div className="absolute -top-8 left-1/2 -translate-x-1/2 z-30 whitespace-nowrap pointer-events-none">
+              <div className="absolute -top-8 left-1/2 -translate-x-1/2 z-30 whitespace-nowrap">
                 <div
                   className="px-2 py-1 bg-purple-900 border-2 border-purple-500 rounded text-[8px] text-purple-200 font-bold"
                   style={{ boxShadow: "2px 2px 0 rgba(0,0,0,0.4)" }}
@@ -415,7 +405,7 @@ export function GameMap({
 
             {/* Player indicator */}
             {isCurrentLocation && (
-              <div className="absolute -top-7 left-1/2 -translate-x-1/2 animate-bounce pointer-events-none">
+              <div className="absolute -top-7 left-1/2 -translate-x-1/2 animate-bounce">
                 <div
                   className="px-1.5 py-0.5 border-2 bg-red-500 border-red-700"
                   style={{ boxShadow: "2px 2px 0 rgba(0,0,0,0.4), inset -2px -2px 0 #a00" }}
@@ -439,17 +429,17 @@ export function GameMap({
       })}
 
       {/* Region name sign */}
-      <div className="absolute top-1.5 sm:top-2 left-1.5 sm:left-2 z-30 pointer-events-none select-none">
+      <div className="absolute top-2 left-2 z-30">
         <div
-          className="px-1.5 sm:px-3 py-0.5 sm:py-1 border-2 sm:border-[3px]"
+          className="px-3 py-1.5 border-[3px]"
           style={{
             backgroundColor: isCity ? "#1a1a2e" : "#2d5a3f",
             borderColor: isCity ? "#4a4a6a" : "#4a7c59",
-            boxShadow: "2px 2px 0 rgba(0,0,0,0.3), inset -1px -1px 0 rgba(0,0,0,0.2), inset 1px 1px 0 rgba(255,255,255,0.1)",
+            boxShadow: "3px 3px 0 rgba(0,0,0,0.3), inset -2px -2px 0 rgba(0,0,0,0.2), inset 2px 2px 0 rgba(255,255,255,0.1)",
           }}
         >
           <span
-            className="text-[7px] sm:text-[9px] md:text-[10px] font-bold uppercase tracking-wider block"
+            className="text-[10px] font-bold uppercase tracking-wider"
             style={{
               fontFamily: "var(--font-pixel), monospace",
               color: isCity ? "#00d4ff" : "#90EE90",
@@ -462,16 +452,16 @@ export function GameMap({
       </div>
 
       {/* Instructions box */}
-      <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 z-30 pointer-events-none select-none">
+      <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 z-30">
         <div
-          className="px-2 py-0.5 sm:py-1 border sm:border-2 bg-slate-900/90"
+          className="px-2 py-1 border-2 bg-slate-900/90"
           style={{
             borderColor: "#3d3d5c",
             boxShadow: "2px 2px 0 rgba(0,0,0,0.3)",
           }}
         >
           <p
-            className="text-[7px] sm:text-[8px] text-center text-slate-300"
+            className="text-[8px] text-center text-slate-300"
             style={{ fontFamily: "var(--font-pixel), monospace" }}
           >
             {disabled && energyRemaining <= 0 ? (
